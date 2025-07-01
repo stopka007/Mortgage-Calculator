@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hypoteční Kalkulačka</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+        .form-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+        } 
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+        .btn.page {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: auto;
+            padding: 10px 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .results-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .result-value {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .schedule-section {
+            grid-column: 1 / -1;
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .schedule-table th,
+        .schedule-table td {
+            padding: 12px;
+            text-align: right;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .schedule-table th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .schedule-table tr:nth-child(even) {
+            background: #f1f3f4;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 Hypoteční Kalkulačka</h1>
+            <p>Vypočítejte si měsíční splátky a celkové náklady hypotéky</p>
+        </div>
+
+        <div class="content">
+            <div class="form-section">
+                <h2>📊 Vstupní údaje</h2>
+                <form id="mortgageForm">
+                    <div class="form-group">
+                        <label for="loanAmount">Výše úvěru (Kč)</label>
+                        <input type="number" id="loanAmount" name="loanAmount" min="1000" step="1000" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="annualInterestRate">Úroková sazba (% p.a.)</label>
+                        <input type="number" id="annualInterestRate" name="annualInterestRate" min="0.1" step="0.1" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loanTermYears">Doba splatnosti (roky)</label>
+                        <input type="number" id="loanTermYears" name="loanTermYears" min="1" max="50" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="downPayment">Záloha (Kč)</label>
+                        <input type="number" id="downPayment" name="downPayment" min="0" step="1000" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="downPayment">Interval splátky </label>
+                        <select id="intervalPayment" name="intervalPayment" min="0" step="1000" required>
+                            <option value="1">Měsíčně</option>
+                            <option value="6">Půlročně</option>
+                            <option value="12">Ročně</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn">🔄 Vypočítat</button>
+                </form>
+            </div>
+
+            <div class="results-section">
+                <h2>💰 Výsledky</h2>
+                <div id="results">
+                    <p style="text-align: center; color: #666; margin-top: 50px;">
+                        Zadejte údaje a klikněte na "Vypočítat"
+                    </p>
+                </div>
+            </div>
+
+            <div class="schedule-section" id="scheduleSection" style="display: none;">
+                <h2>📅 Splátkový kalendář</h2>
+                <div id="scheduleTable"></div>
+                <div id="schedulePagination" style="text-align:center; margin: 10px 0; display:none;">
+                    <button id="prevPage" class="btn page" disabled>Předchozí</button>
+                    <span id="pageInfo"></span>
+                    <button id="nextPage" class="btn page" disabled>Další</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let fullSchedule = [];
+        let currentPage = 1;
+        const paymentsPerPage = 12;
+
+        document.getElementById('mortgageForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const requestData = {
+                loanAmount: parseFloat(formData.get('loanAmount')),
+                annualInterestRate: parseFloat(formData.get('annualInterestRate')),
+                loanTermYears: parseInt(formData.get('loanTermYears')),
+                downPayment: parseFloat(formData.get('downPayment')),
+                intervalPayment: parseInt(formData.get('intervalPayment'))
+            };
+
+            // Show loading
+            document.getElementById('results').innerHTML = '<div class="loading">Počítám...</div>';
+            document.getElementById('scheduleSection').style.display = 'none';
+
+            try {
+                const response = await fetch('/api/mortgage/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Chyba při výpočtu');
+                }
+
+                const result = await response.json();
+                displayResults(result);
+                displaySchedule(result.paymentSchedule);
+                
+            } catch (error) {
+                document.getElementById('results').innerHTML = 
+                    '<div class="error">Chyba při výpočtu: ' + error.message + '</div>';
+            }
+        });
+
+        function displayResults(result) {
+            const resultsHtml = `
+                <div class="result-item">
+                    <span class="result-label">${getIntervalLabel(result.intervalPayment)}:</span>
+                    <span class="result-value">${formatCurrency(result.monthlyPayment)}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Celková částka úvěru:</span>
+                    <span class="result-value">${formatCurrency(result.principalAmount)}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Záloha:</span>
+                    <span class="result-value">${formatCurrency(result.downPayment)}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Celkové úroky:</span>
+                    <span class="result-value">${formatCurrency(result.totalInterest)}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Celkové splátky:</span>
+                    <span class="result-value">${formatCurrency(result.totalPayment)}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Celkové náklady:</span>
+                    <span class="result-value">${formatCurrency(result.totalCost)}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">RPSN:</span>
+                    <span class="result-value">${result.rpsn.toFixed(2)}%</span>
+                </div>
+            `;
+            
+            document.getElementById('results').innerHTML = resultsHtml;
+        }
+
+        function displaySchedule(schedule) {
+            fullSchedule = schedule || [];
+            currentPage = 1;
+            renderSchedulePage();
+            document.getElementById('scheduleSection').style.display = fullSchedule.length ? 'block' : 'none';
+            document.getElementById('schedulePagination').style.display = fullSchedule.length ? 'block' : 'none';
+        }
+
+        function renderSchedulePage() {
+            if (!fullSchedule.length) return;
+            const start = (currentPage - 1) * paymentsPerPage;
+            const end = Math.min(start + paymentsPerPage, fullSchedule.length);
+            let tableHtml = `
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Číslo splátky</th>
+                            <th>Splátka</th>
+                            <th>Jistina</th>
+                            <th>Úrok</th>
+                            <th>Zbývající dluh</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            for (let i = start; i < end; i++) {
+                const payment = fullSchedule[i];
+                tableHtml += `
+                    <tr>
+                        <td>${payment.paymentNumber}</td>
+                        <td>${formatCurrency(payment.payment)}</td>
+                        <td>${formatCurrency(payment.principal)}</td>
+                        <td>${formatCurrency(payment.interest)}</td>
+                        <td>${formatCurrency(payment.remainingBalance)}</td>
+                    </tr>
+                `;
+            }
+            tableHtml += '</tbody></table>';
+            document.getElementById('scheduleTable').innerHTML = tableHtml;
+
+            // Update pagination controls
+            const totalPages = Math.ceil(fullSchedule.length / paymentsPerPage);
+            document.getElementById('pageInfo').textContent = `Stránka ${currentPage} z ${totalPages}`;
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage === totalPages;
+        }
+
+        document.getElementById('prevPage').addEventListener('click', function() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderSchedulePage();
+            }
+        });
+        document.getElementById('nextPage').addEventListener('click', function() {
+            const totalPages = Math.ceil(fullSchedule.length / paymentsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderSchedulePage();
+            }
+        });
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('cs-CZ', {
+                style: 'currency',
+                currency: 'CZK',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(Math.round((amount + Number.EPSILON) * 100) / 100);
+        }
+
+        function getIntervalLabel(interval) {
+            switch (interval) {
+                case 1: return "Měsíční splátka";
+                case 6: return "Půlroční splátka";
+                case 12: return "Roční splátka";
+                default: return "Splátka";
+            }
+        }
+
+        // Set default values
+        document.getElementById('loanAmount').value = '3000000';
+        document.getElementById('annualInterestRate').value = '4.5';
+        document.getElementById('loanTermYears').value = '30';
+        document.getElementById('downPayment').value = '600000';
+    </script>
+</body>
+</html> 

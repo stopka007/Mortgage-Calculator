@@ -1,0 +1,6 @@
+/hypo-calculator/src/main/java/com/example/hypocalculator/HypoCalculatorApplication.java
+/hypo-calculator/src/main/java/com/example/hypocalculator/controllers/HelloController.java
+/hypo-calculator/src/main/java/com/example/hypocalculator/controllers/MortgageController.java
+/hypo-calculator/src/main/java/com/example/hypocalculator/model/MortgageRequest.java
+/hypo-calculator/src/main/java/com/example/hypocalculator/model/MortgageResponse.java
+/hypo-calculator/src/main/java/com/example/hypocalculator/service/MortgageService.java
